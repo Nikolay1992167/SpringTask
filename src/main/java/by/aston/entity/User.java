@@ -1,5 +1,6 @@
 package by.aston.entity;
 
+import by.aston.entity.listener.UserListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -20,7 +21,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldNameConstants
-//@EntityListeners(HouseListener.class)
+@EntityListeners(UserListener.class)
 @Table(name = "houses")
 public class User {
 
@@ -38,13 +39,13 @@ public class User {
     private String surname;
 
     @Column(name = "login", nullable = false)
-    private String city;
+    private String login;
 
     @Column(name = "password", nullable = false)
-    private String street;
+    private String password;
 
     @Column(name = "phone")
-    private Integer number;
+    private Integer phone;
 
     @Column(name = "create_date", nullable = false)
     private LocalDateTime createDate;
