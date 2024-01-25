@@ -32,6 +32,13 @@ public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper = Mappers.getMapper(UserMapper.class);
 
+    /**
+     * Finds one {@link UserResponse} by UUID.
+     *
+     * @param uuid the field uuid of the {@link User}.
+     * @return UserResponse with the specified UUID and mapped from User entity.
+     * @throws NotFoundException if User is not exists by finding it by UUID.
+     */
     @Override
     public UserResponse findById(UUID uuid) {
 
@@ -43,6 +50,11 @@ public class UserServiceImpl implements UserService {
         return userResponse;
     }
 
+    /**
+     * Finds all {@link UserResponse}.
+     *
+     * @return mapped from entity to dto list of all UserResponse.
+     */
     @Override
     public List<UserResponse> findAll() {
 
@@ -55,6 +67,12 @@ public class UserServiceImpl implements UserService {
         return new ArrayList<>(userResponses);
     }
 
+    /**
+     * Saves one {@link User}.
+     * @param userRequest the {@link UserRequest} which will be mapped to User
+     *                     and saved in database by dao.
+     * @return the saved {@link UserResponse} which was mapped from User entity.
+     */
     @Override
     public UserResponse save(UserRequest userRequest) {
 
@@ -68,6 +86,14 @@ public class UserServiceImpl implements UserService {
         return userResponse;
     }
 
+    /**
+     * Updates one {@link User}.
+     * @param uuid the field uuid of the {@link User}.
+     * @param userRequest the {@link UserRequest} which will be mapped to User and
+     *                     updated in database by dao.
+     * @return the updated {@link UserResponse} which was mapped from User entity.
+     * @throws NotFoundException if User is not exists by finding it by UUID.
+     */
     @Override
     public UserResponse update(UUID uuid, UserRequest userRequest) {
 
@@ -88,13 +114,28 @@ public class UserServiceImpl implements UserService {
         return userResponse;
     }
 
+    /**
+     * Deletes one {@link User} by UUID.
+     *
+     * @param uuid the field of the User.
+     * @throws NotFoundException if User is not exists by finding it by UUID.
+     */
     @Override
     public void delete(UUID uuid) {
 
-        userDao.delete(uuid);
+        User userInDB = userDao.findById(uuid)
+                .orElseThrow(() -> NotFoundException.of(User.class, uuid));
+
+        userDao.delete(userInDB.getUuid());
         log.info("Service method delete");
     }
 
+    /**
+     * Performs a check login and pasword of {@link RequestAuthorization}.
+     * @param authorization the {@link RequestAuthorization} when contain
+     *                      login parameters.
+     * @return a message containing a response.
+     */
     @Override
     public String login(RequestAuthorization authorization) {
 
@@ -110,6 +151,13 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    /**
+     * Updates the password of User.
+     * @param fields contains data for executing the method.
+     * @return the {@link UserResponse} which updated password.
+     * @throws ValidException if the data is entered incorrectly.
+     * @throws NotFoundException if User is not exists by finding it by UUID.
+     */
     @Override
     public UserResponse changingPassword(Map<String, Object> fields) {
 
