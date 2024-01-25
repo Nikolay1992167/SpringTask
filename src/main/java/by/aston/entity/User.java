@@ -22,7 +22,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @FieldNameConstants
 @EntityListeners(UserListener.class)
-@Table(name = "houses")
+@Table(name = "users")
 public class User {
 
     @Id
@@ -45,7 +45,7 @@ public class User {
     private String password;
 
     @Column(name = "phone")
-    private Integer phone;
+    private Long phone;
 
     @Column(name = "create_date", nullable = false)
     private LocalDateTime createDate;

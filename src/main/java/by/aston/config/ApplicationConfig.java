@@ -22,7 +22,7 @@ public class ApplicationConfig {
      * an application context's bean definitions.
      * The method creates a new {@link PropertySourcesPlaceholderConfigurer} object, which is used to replace ${...}
      * placeholders with properties from a {@link Properties} instance.
-     * Then it creates a new {@link YamlPropertiesFactoryBean} object and sets the 'application.yml' file as its resource.
+     * Then it creates a new {@link YamlPropertiesFactoryBean} object and sets the '.yml' file as its resource.
      * he {@link YamlPropertiesFactoryBean} object is used to load YAML (`.yml`) files and convert them into a {@link Properties} object.
      * The method then retrieves the {@link Properties} object from the {@link YamlPropertiesFactoryBean} object and sets
      * it on the {@link PropertySourcesPlaceholderConfigurer} object.

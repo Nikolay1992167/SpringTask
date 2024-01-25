@@ -2,7 +2,6 @@ package by.aston.dao.impl;
 
 import by.aston.dao.UserDao;
 import by.aston.entity.User;
-import by.aston.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Session;
@@ -33,6 +32,8 @@ public class UserDaoImpl implements UserDao {
             return Optional.ofNullable(user);
         }
     }
+
+
 
     @Override
     public List<User> findAll() {
@@ -79,6 +80,20 @@ public class UserDaoImpl implements UserDao {
             Optional<User> person = findById(id);
             session.remove(person.get());
             session.getTransaction().commit();
+        }
+    }
+
+    @Override
+    public Optional<User> findUserByLoginAndPassword(String login, String password) {
+
+        try (Session session = sessionFactory.openSession()) {
+
+            User user = session.createQuery("SELECT u FROM User u WHERE u.login = :login AND u.password = :password", User.class)
+                    .setParameter("login", login)
+                    .setParameter("password", password)
+                    .uniqueResult();
+
+            return Optional.ofNullable(user);
         }
     }
 }

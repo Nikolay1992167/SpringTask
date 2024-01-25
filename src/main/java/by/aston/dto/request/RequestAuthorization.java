@@ -1,7 +1,6 @@
 package by.aston.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,15 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserRequest {
-
-    @NotBlank
-    @Size(max = 15)
-    private String name;
-
-    @NotBlank
-    @Size(max = 20)
-    private String surname;
+public class RequestAuthorization {
 
     @NotBlank
     @Size(max = 10)
@@ -29,8 +20,4 @@ public class UserRequest {
     @NotBlank
     @Size(max = 10)
     private String password;
-
-    @NotNull
-    @Size(max = 12)
-    private Long phone;
 }

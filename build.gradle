@@ -1,9 +1,15 @@
 plugins {
     id 'java'
+    id "io.freefair.lombok" version "8.4"
+    id 'war'
 }
 
 group = 'by.aston'
 version = '1.0-SNAPSHOT'
+
+compileJava {
+    options.compilerArgs << '-parameters'
+}
 
 repositories {
     mavenCentral()

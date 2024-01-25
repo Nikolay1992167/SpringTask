@@ -32,7 +32,7 @@ public class DatabaseConfig {
 
     /**
      * Creates a new instance of the {@link HikariDataSource} class, which provides a connection pool for the database.
-     * The method retrieves the database connection properties from the application.yml file using the
+     * The method retrieves the database connection properties from the .yml file using the
      * {@Value}. Then creates a new {@link HikariConfig} class and sets these properties
      * on it before passing it to the constructor of a new {@link HikariDataSource} object.
      *

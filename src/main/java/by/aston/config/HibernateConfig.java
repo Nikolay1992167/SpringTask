@@ -40,7 +40,7 @@ public class HibernateConfig {
 
         LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
         sessionFactory.setDataSource(hikariDataSource);
-        sessionFactory.setPackagesToScan("ru.clevertec.house");
+        sessionFactory.setPackagesToScan("by.aston");
         sessionFactory.setHibernateProperties(hibernateProperties());
         return sessionFactory;
     }
