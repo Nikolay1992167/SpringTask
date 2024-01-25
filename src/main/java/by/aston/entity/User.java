@@ -9,18 +9,18 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.experimental.FieldNameConstants;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
 @Entity
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@FieldNameConstants
 @EntityListeners(UserListener.class)
 @Table(name = "users")
 public class User {
