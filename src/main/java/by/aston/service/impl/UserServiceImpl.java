@@ -5,6 +5,8 @@ import by.aston.dto.request.RequestAuthorization;
 import by.aston.dto.request.UserRequest;
 import by.aston.dto.response.UserResponse;
 import by.aston.entity.User;
+import by.aston.exception.InvalidDataException;
+import by.aston.exception.InvalidLoginDataException;
 import by.aston.exception.NotFoundException;
 import by.aston.exception.ValidException;
 import by.aston.mapper.UserMapper;
@@ -68,13 +70,21 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * Saves one {@link User}.
+     * Saves one {@link User} and checking the login and the password if exist in DB.
      * @param userRequest the {@link UserRequest} which will be mapped to User
      *                     and saved in database by dao.
      * @return the saved {@link UserResponse} which was mapped from User entity.
      */
     @Override
     public UserResponse save(UserRequest userRequest) {
+
+        String userLogin = userRequest.getLogin();
+        String userPassword = userRequest.getPassword();
+
+        Optional<User> userInDB = userDao.findUserByLoginAndPassword(userLogin, userPassword);
+        if (userInDB.isPresent()){
+            throw new ValidException("Логин или пароль уже используются!");
+        }
 
         User userToSave = userMapper.toUser(userRequest);
 
@@ -147,7 +157,7 @@ public class UserServiceImpl implements UserService {
         if (userInDB.isPresent()) {
             return "Авторизация прошла успешно!";
         } else {
-            return "Данные введены не верно или пользователь не существует!";
+            throw new InvalidLoginDataException();
         }
     }
 
@@ -174,7 +184,7 @@ public class UserServiceImpl implements UserService {
         String newpassword = fields.get("newpassword").toString();
 
         if (oldpassword.equals(newpassword)) {
-            throw ValidException.of(User.class);
+            throw new InvalidDataException("Пароли совпадают, придумайте новый пароль!");
         }
 
 

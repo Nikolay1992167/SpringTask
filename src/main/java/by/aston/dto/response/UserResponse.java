@@ -1,5 +1,6 @@
 package by.aston.dto.response;
 
+import by.aston.enams.UserType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,4 +26,6 @@ public class UserResponse {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss:SSS")
     private LocalDateTime createDate;
+
+    private UserType userType;
 }

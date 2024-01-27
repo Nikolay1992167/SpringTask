@@ -9,5 +9,6 @@ CREATE TABLE IF NOT EXISTS  users (
     password VARCHAR(10) NOT NULL,
     phone BIGINT NOT NULL,
     create_date TIMESTAMP NOT NULL,
+    user_type VARCHAR(10) NOT NULL,
     UNIQUE (name, surname, login, password, phone)
 );

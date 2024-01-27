@@ -5,6 +5,8 @@ import by.aston.dto.request.RequestAuthorization;
 import by.aston.dto.request.UserRequest;
 import by.aston.dto.response.UserResponse;
 import by.aston.entity.User;
+import by.aston.exception.InvalidDataException;
+import by.aston.exception.InvalidLoginDataException;
 import by.aston.exception.NotFoundException;
 import by.aston.exception.ValidException;
 import by.aston.mapper.UserMapper;
@@ -24,15 +26,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import static by.aston.service.impl.TestData.USER_FOR_TEST;
-import static by.aston.service.impl.TestData.USER_INCORRECT_UUID;
-import static by.aston.service.impl.TestData.USER_REQUEST_FOR_TEST;
-import static by.aston.service.impl.TestData.USER_REQUEST_FOR_UPDATE_TEST;
-import static by.aston.service.impl.TestData.USER_RESPONSE_FOR_UPDATE_TEST;
-import static by.aston.service.impl.TestData.USER_UPDATE_FOR_UPDATE_TEST;
-import static by.aston.service.impl.TestData.USER_UUID;
+import static by.aston.service.impl.initdata.ConstantsForUser.UPDATE_USER_NAME;
+import static by.aston.service.impl.initdata.ConstantsForUser.UPDATE_USER_SURNAME;
+import static by.aston.service.impl.initdata.ConstantsForUser.USER_INCORRECT_UUID;
+import static by.aston.service.impl.initdata.ConstantsForUser.USER_LOGIN;
+import static by.aston.service.impl.initdata.ConstantsForUser.USER_NEW_PASSWORD;
+import static by.aston.service.impl.initdata.ConstantsForUser.USER_PASSWORD;
+import static by.aston.service.impl.initdata.ConstantsForUser.USER_UUID;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
@@ -62,10 +64,12 @@ class UserServiceImplTest {
         void shouldReturnExpectedUserByUUID() {
             // given
             UUID userUuid = USER_UUID;
+            User user = UserTestData.builder()
+                    .build()
+                    .getEntity();
+            Optional<User> userInDB = Optional.of(user);
 
-            Optional<User> userInDB = Optional.of(USER_FOR_TEST);
-
-            UserResponse expected = userMapper.toResponse(USER_FOR_TEST);
+            UserResponse expected = userMapper.toResponse(user);
 
             when(userDao.findById(userUuid))
                     .thenReturn(userInDB);
@@ -100,11 +104,11 @@ class UserServiceImplTest {
         @Test
         void shouldReturnListOfUserResponse() {
             // given
-            int expectedSize = 3;
-
-            List<User> usersList = List.of(USER_FOR_TEST,
-                    USER_FOR_TEST,
-                    USER_FOR_TEST);
+            int expectedSize = 1;
+            User user = UserTestData.builder()
+                    .build()
+                    .getEntity();
+            List<User> usersList = List.of(user);
 
             when(userDao.findAll())
                     .thenReturn(usersList);
@@ -137,7 +141,9 @@ class UserServiceImplTest {
         @Test
         void shouldReturnSavedUserResponseIfValidUserRequest() {
             // given
-            UserRequest userRequest = USER_REQUEST_FOR_TEST;
+            UserRequest userRequest = UserTestData.builder()
+                    .build()
+                    .getRequestEntity();
 
             User expected = userMapper.toUser(userRequest);
 
@@ -152,6 +158,26 @@ class UserServiceImplTest {
             User actual = captor.getValue();
             assertThat(actual).isEqualTo(expected);
         }
+
+        @Test
+        public void shouldReturnThrowValidExceptionWhenUserExists() {
+            // given
+            UserRequest userRequest = UserTestData.builder()
+                    .build()
+                    .getRequestEntity();
+
+            User user = UserTestData.builder()
+                    .build()
+                    .getEntity();
+
+            when(userDao.findUserByLoginAndPassword(userRequest.getLogin(), userRequest.getPassword()))
+                    .thenReturn(Optional.of(user));
+
+            // when, then
+            assertThatThrownBy(() -> userService.save(userRequest))
+                    .isInstanceOf(ValidException.class)
+                    .hasMessage("Логин или пароль уже используются!");
+        }
     }
 
     @Nested
@@ -162,19 +188,33 @@ class UserServiceImplTest {
             // given
             UUID userUuid = USER_UUID;
 
-            UserRequest requestDto = USER_REQUEST_FOR_UPDATE_TEST;
+            UserRequest requestDto = UserTestData.builder()
+                    .withName(UPDATE_USER_NAME)
+                    .withName(UPDATE_USER_SURNAME)
+                    .build()
+                    .getRequestEntity();
 
-            User userToUpdate = USER_UPDATE_FOR_UPDATE_TEST;
+            User userToUpdate = userMapper.toUser(requestDto);
 
-            Optional<User> userInDB = Optional.of(USER_FOR_TEST);
+            User updatedUser = UserTestData.builder()
+                    .withName(UPDATE_USER_NAME)
+                    .withName(UPDATE_USER_SURNAME)
+                    .build()
+                    .getEntity();
 
-            UserResponse expected = USER_RESPONSE_FOR_UPDATE_TEST;
+            Optional<User> userInDB = Optional.of(updatedUser);
+
+            UserResponse expected = userMapper.toResponse(updatedUser);
 
             when(userDao.findById(userUuid))
                     .thenReturn(userInDB);
 
+            userToUpdate.setId(userInDB.get().getId());
+            userToUpdate.setUuid(userInDB.get().getUuid());
+            userToUpdate.setCreateDate(userInDB.get().getCreateDate());
+
             when(userDao.update(userToUpdate))
-                    .thenReturn(userToUpdate);
+                    .thenReturn(updatedUser);
 
             // when
             UserResponse actual = userService.update(userUuid, requestDto);
@@ -189,7 +229,11 @@ class UserServiceImplTest {
             // given
             UUID incorrectUUID = USER_INCORRECT_UUID;
 
-            UserRequest requestDto = USER_REQUEST_FOR_UPDATE_TEST;
+            UserRequest requestDto = UserTestData.builder()
+                    .withName(UPDATE_USER_NAME)
+                    .withName(UPDATE_USER_SURNAME)
+                    .build()
+                    .getRequestEntity();
 
             when(userDao.findById(incorrectUUID))
                     .thenReturn(Optional.empty());
@@ -209,14 +253,31 @@ class UserServiceImplTest {
             // given
             UUID userUuid = USER_UUID;
 
+            User user = UserTestData.builder()
+                    .build()
+                    .getEntity();
+
+            when(userDao.findById(userUuid))
+                    .thenReturn(Optional.of(user));
+
             doNothing().when(userDao).delete(userUuid);
 
             // when
             userService.delete(userUuid);
 
             // then
-            verify(userDao, times(1))
-                    .delete(userUuid);
+            verify(userDao, times(1)).findById(userUuid);
+            verify(userDao, times(1)).delete(userUuid);
+        }
+
+        @Test
+        void shouldReturnThrowIfHouseNotExistWithUUID() {
+            // given
+            UUID incorrectUUID = USER_INCORRECT_UUID;
+
+            // when, then
+            assertThrows(NotFoundException.class, () -> userService.delete(incorrectUUID));
+            verify(userDao, never()).delete(incorrectUUID);
         }
     }
 
@@ -226,10 +287,12 @@ class UserServiceImplTest {
         @Test
         void shouldReturnSuccessMessageWhenLoginIsValid() {
             // given
-            RequestAuthorization authorization = new RequestAuthorization("oleg", "vorona");
+            RequestAuthorization authorization = new RequestAuthorization(USER_LOGIN, USER_PASSWORD);
             String login = authorization.getLogin();
             String password = authorization.getPassword();
-            User user = USER_FOR_TEST;
+            User user = UserTestData.builder()
+                    .build()
+                    .getEntity();
             when(userDao.findUserByLoginAndPassword(login, password)).thenReturn(Optional.of(user));
 
             // when
@@ -249,11 +312,10 @@ class UserServiceImplTest {
 
             when(userDao.findUserByLoginAndPassword(loginIncorrect, passwordIncorrect)).thenReturn(Optional.empty());
 
-            // when
-            String result = userService.login(authorization);
-
-            // then
-            assertThat(result).isEqualTo("Данные введены не верно или пользователь не существует!");
+            // when, then
+            assertThatThrownBy(() -> userService.login(authorization))
+                    .isInstanceOf(InvalidLoginDataException.class)
+                    .hasMessage("Данные введены не верно или пользователь не существует!");
         }
     }
 
@@ -264,14 +326,16 @@ class UserServiceImplTest {
         void shouldReturnUpdatedUserResponseWhenChangingPassword() {
             // given
             Map<String, Object> fields = new HashMap<>();
-            fields.put("login", "oleg");
-            fields.put("oldpassword", "vorona");
-            fields.put("newpassword", "zebra");
+            fields.put("login", USER_LOGIN);
+            fields.put("oldpassword", USER_PASSWORD);
+            fields.put("newpassword", USER_NEW_PASSWORD);
 
             String login = fields.get("login").toString();
             String password = fields.get("oldpassword").toString();
 
-            User user = USER_FOR_TEST;
+            User user = UserTestData.builder()
+                    .build()
+                    .getEntity();
 
             when(userDao.findUserByLoginAndPassword(login, password)).thenReturn(Optional.of(user));
             when(userDao.update(any(User.class))).thenReturn(user);
@@ -285,18 +349,42 @@ class UserServiceImplTest {
         }
 
         @Test
+        void shouldThrowExceptionWhenInvalidDataInRequest() {
+            // given
+            Map<String, Object> fields = new HashMap<>();
+            fields.put("login", USER_LOGIN);
+            fields.put("oldpassword", USER_PASSWORD);
+
+            assertThatThrownBy(() -> userService.changingPassword(fields))
+                    .isInstanceOf(ValidException.class)
+                    .hasMessageContaining("Данные введены неверно!");
+        }
+
+        @Test
         void shouldThrowExceptionWhenChangingPasswordWithSameOldAndNewPassword() {
             // given
             Map<String, Object> fields = new HashMap<>();
-            fields.put("login", "oleg");
-            fields.put("oldpassword", "vorona");
-            fields.put("newpassword", "vorona");
+            fields.put("login", USER_LOGIN);
+            fields.put("oldpassword", USER_PASSWORD);
+            fields.put("newpassword", USER_PASSWORD);
 
-            // when
-            Throwable thrown = catchThrowable(() -> userService.changingPassword(fields));
+            // when, then
+            assertThatThrownBy(() -> userService.changingPassword(fields))
+                    .isInstanceOf(InvalidDataException.class);
+        }
 
-            // then
-            assertThat(thrown).isInstanceOf(ValidException.class);
+        @Test
+        void shouldThrowExceptionWhenUserWithParametersNotFound() {
+            // given
+            Map<String, Object> fields = new HashMap<>();
+            fields.put("login", USER_LOGIN);
+            fields.put("oldpassword", USER_PASSWORD);
+            fields.put("newpassword", USER_NEW_PASSWORD);
+
+            when(userDao.findUserByLoginAndPassword(USER_LOGIN, USER_PASSWORD)).thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> userService.changingPassword(fields))
+                    .isInstanceOf(NotFoundException.class);
         }
     }
 }

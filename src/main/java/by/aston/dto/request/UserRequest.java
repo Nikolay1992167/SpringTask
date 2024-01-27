@@ -1,5 +1,6 @@
 package by.aston.dto.request;
 
+import by.aston.enams.UserType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -33,4 +34,7 @@ public class UserRequest {
     @NotNull
     @Size(max = 12)
     private Long phone;
+
+    @NotNull
+    private UserType userType;
 }

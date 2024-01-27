@@ -1,5 +1,7 @@
 package by.aston.exception.handler;
 
+import by.aston.exception.InvalidDataException;
+import by.aston.exception.InvalidLoginDataException;
 import by.aston.exception.NotFoundException;
 import by.aston.exception.ValidException;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +39,18 @@ public class ControllerAdvice {
     }
 
     @ExceptionHandler
-    public ResponseEntity<IncorrectData> handleCheckEmptyException(ValidException exception){
+    public ResponseEntity<IncorrectData> handleValidException(ValidException exception){
+
+        IncorrectData incorrectData = new IncorrectData();
+        incorrectData.setErrorMessage(exception.getMessage());
+        incorrectData.setErrorCode(HttpStatus.CONFLICT.toString());
+
+        log.error(incorrectData.toString());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(incorrectData);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<IncorrectData> handleInvalidDataException(InvalidDataException exception){
 
         IncorrectData incorrectData = new IncorrectData();
         incorrectData.setErrorMessage(exception.getMessage());
@@ -45,5 +58,16 @@ public class ControllerAdvice {
 
         log.error(incorrectData.toString());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(incorrectData);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<IncorrectData> handleInvalidLoginDataException(InvalidLoginDataException exception){
+
+        IncorrectData incorrectData = new IncorrectData();
+        incorrectData.setErrorMessage(exception.getMessage());
+        incorrectData.setErrorCode(HttpStatus.UNAUTHORIZED.toString());
+
+        log.error(incorrectData.toString());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(incorrectData);
     }
 }
