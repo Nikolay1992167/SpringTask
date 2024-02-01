@@ -1,6 +1,5 @@
 package by.aston.service.impl;
 
-import by.aston.dao.UserDao;
 import by.aston.dto.request.RequestAuthorization;
 import by.aston.dto.request.UserRequest;
 import by.aston.dto.response.UserResponse;
@@ -10,6 +9,7 @@ import by.aston.exception.InvalidLoginDataException;
 import by.aston.exception.NotFoundException;
 import by.aston.exception.ValidException;
 import by.aston.mapper.UserMapper;
+import by.aston.repository.UserRepository;
 import by.aston.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +30,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    private final UserDao userDao;
+    private final UserRepository userRepository;
 
     private final UserMapper userMapper = Mappers.getMapper(UserMapper.class);
 
@@ -44,7 +44,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse findById(UUID uuid) {
 
-        UserResponse userResponse = userDao.findById(uuid)
+        UserResponse userResponse = userRepository.findByUuid(uuid)
                 .map(userMapper::toResponse)
                 .orElseThrow(() -> NotFoundException.of(User.class, uuid));
         log.info("Service method findById: {}", userResponse);
@@ -60,7 +60,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserResponse> findAll() {
 
-        List<UserResponse> userResponses = userDao.findAll()
+        List<UserResponse> userResponses = userRepository.findAll()
                 .stream()
                 .map(userMapper::toResponse)
                 .toList();
@@ -81,14 +81,14 @@ public class UserServiceImpl implements UserService {
         String userLogin = userRequest.getLogin();
         String userPassword = userRequest.getPassword();
 
-        Optional<User> userInDB = userDao.findUserByLoginAndPassword(userLogin, userPassword);
+        Optional<User> userInDB = userRepository.findUserByLoginAndPassword(userLogin, userPassword);
         if (userInDB.isPresent()){
             throw new ValidException("Логин или пароль уже используются!");
         }
 
         User userToSave = userMapper.toUser(userRequest);
 
-        User savedUser = userDao.save(userToSave);
+        User savedUser = userRepository.save(userToSave);
 
         UserResponse userResponse = userMapper.toResponse(savedUser);
         log.info("Service method save: {}", userResponse);
@@ -109,14 +109,14 @@ public class UserServiceImpl implements UserService {
 
         User userToUpdate = userMapper.toUser(userRequest);
 
-        User userInDB = userDao.findById(uuid)
+        User userInDB = userRepository.findByUuid(uuid)
                 .orElseThrow(() -> NotFoundException.of(User.class, uuid));
 
         userToUpdate.setId(userInDB.getId());
         userToUpdate.setUuid(uuid);
         userToUpdate.setCreateDate(userInDB.getCreateDate());
 
-        User updatedUser = userDao.update(userToUpdate);
+        User updatedUser = userRepository.save(userToUpdate);
 
         UserResponse userResponse = userMapper.toResponse(updatedUser);
         log.info("Service method update: {}", userResponse);
@@ -133,10 +133,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public void delete(UUID uuid) {
 
-        User userInDB = userDao.findById(uuid)
+        User userInDB = userRepository.findByUuid(uuid)
                 .orElseThrow(() -> NotFoundException.of(User.class, uuid));
 
-        userDao.delete(userInDB.getUuid());
+        userRepository.deleteByUuid(userInDB.getUuid());
         log.info("Service method delete");
     }
 
@@ -152,7 +152,7 @@ public class UserServiceImpl implements UserService {
         String login = authorization.getLogin();
         String password = authorization.getPassword();
 
-        Optional<User> userInDB = userDao.findUserByLoginAndPassword(login, password);
+        Optional<User> userInDB = userRepository.findUserByLoginAndPassword(login, password);
 
         if (userInDB.isPresent()) {
             return "Авторизация прошла успешно!";
@@ -188,7 +188,7 @@ public class UserServiceImpl implements UserService {
         }
 
 
-        Optional<User> userInDB = userDao.findUserByLoginAndPassword(login, oldpassword);
+        Optional<User> userInDB = userRepository.findUserByLoginAndPassword(login, oldpassword);
 
         if (userInDB.isPresent()) {
             User user = userInDB.get();
@@ -202,7 +202,7 @@ public class UserServiceImpl implements UserService {
                     ReflectionUtils.setField(field, user, v);
                 }
             });
-            User updatedUser = userDao.update(user);
+            User updatedUser = userRepository.save(user);
             UserResponse userResponse = userMapper.toResponse(updatedUser);
             log.info("Service method changingPassword: {}", userResponse);
 
