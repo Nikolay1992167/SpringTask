@@ -1,45 +1,33 @@
 ### Task - SpringMVC
 
-* Проект разработан на основе Spring Framework. В нем используются конфигурационные классы ApplicationConfig.java,
-* DatabaseConfig.java, DispatcherInitializer.java, HibernateConfig.java, LiquibaseConfig.java и
-* WebMvcConfig.java для настройки контекста приложения. В проекте предусмотрена MVC архитектура. Для пояснения функциональность
-* оформлены javadoc.
-* Согласно условиям задания создана сущность User, которая может:
-* 1) регистрировать пользователя (метод save в UserService);
-* 2) входить по логину и паролю (метод login в UserService);
-* 3) просматривать всех пользователей (метод findAll в UserService);
-* 4) менять пароль (метод changingPassword в UserService);
-
-* Реализована структура проекта согласно условиям задания.
-* В проекте используется конфигурационный файл типа .yml. Создан 1 файла application-dev.yml. Но впроекте предусмотрено
-* обеспечить 2 типа конфигурации dev и prod например. Выбор осуществляется указанием -Dspring.profiles.active=dev в
-* Edit Configurations -> VM Options.
+* Проект разработан на основе проекта Spring Framework, путем удаления папки config с конфигурациями и создания 
+* класса Application. Данный класс выполняет роль конфигурационного и запуск приложения осуществляется с его помощью.
 
 ### Технологии применённые в проекте
 
 * Java 17
 * Gradle 8.1.1
-* Jakarta.validation-api:3.1.0-M1
-* Slf4j 2.0.11
+* Springframework.boot' version '3.2.1'
+* Spring-boot-starter-data-jpa
+* Spring-boot-starter-web
+* spring-boot-starter-validation
 * Liquibase 4.25.1
-* Fasterxml.jackson 2.14.2
-* Spring-orm 6.1.2
-* Spring-webmvc 6.1.2
-* Hibernate-core 6.4.1.Final
-* HicariCP 5.0.1
+* Jackson-databind 2.14.2
 * Mapstruct 1.5.3.Final
 * Postgresql 42.6.0
-* Jakarta.servlet-api 6.0.0
+* Spring-boot-starter-test
 * Assertj-core 3.24.2
 * Mockito-junit-jupiter 5.8.0
+* Springdoc-openapi-starter-webmvc-ui 2.3.0
 
 ### Инструкция по запуску приложения локально
 
 1. У вас должно быть установлено [Java 17](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html),
    [Intellij IDEA Ultimate](https://www.jetbrains.com/idea/download/), [Tomcat 10.1](https://tomcat.apache.org/download-10.cgi)
    and [Postgresql](https://www.postgresql.org/download/).
-2. В Postgresql вы должны создать базу данных users.
-3. Введите свои username и password в соответсвующий файл в строках №5, №6
+2. В Postgresql вы должны создать базу данных houses.
+3. В зависимости от используемого профиля вы вводите в application.yml укажите тип профиля spring: profiles: active:-.
+   Введите свои username и password в соответсвующий файл в строках №5, №6
 4. Скрипты по созданию таблиц и загрузке данных выполняются автоматически посредствам Liquibase.
 5. Приложение готово к работе.
 
